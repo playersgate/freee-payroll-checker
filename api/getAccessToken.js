@@ -19,5 +19,5 @@ async function getAccessToken() {
     }
 }
 
-// ✅ 修正: 関数を適切にエクスポート
-module.exports = { getAccessToken };
+// ✅ **正しいエクスポート形式**
+module.exports = getAccessToken;
