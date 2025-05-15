@@ -1,8 +1,8 @@
-const getPayrollStatements = require("./getPayrollStatements");  // ✅ 修正: 関数を適切にインポート
+const { getPayrollStatements } = require("./getPayrollStatements");  // ✅ 修正: 正しくインポート
 
 async function checkPayrollErrors(year, month) {
     try {
-        const statements = await getPayrollStatements(year, month);  // ✅ 修正: 直接関数として呼び出し
+        const statements = await getPayrollStatements(year, month);  // ✅ 修正: 関数を適切に呼び出す
         console.log("✅ 給与明細データ取得成功:", statements);
         return statements;
     } catch (error) {
@@ -11,4 +11,4 @@ async function checkPayrollErrors(year, month) {
     }
 }
 
-module.exports = checkPayrollErrors;
+module.exports = { checkPayrollErrors };

@@ -1,23 +1,23 @@
 const axios = require("axios");
-require("dotenv").config();
+const getAccessToken = require("./getAccessToken");  // ✅ 修正: インポート方法を正しく設定
 
-async function getAccessToken() {
+async function getPayrollStatements(year, month) {
     try {
-        const response = await axios.post("https://accounts.secure.freee.co.jp/public_api/token", {
-            grant_type: "authorization_code",
-            client_id: process.env.FREEE_CLIENT_ID,
-            client_secret: process.env.FREEE_CLIENT_SECRET,
-            redirect_uri: process.env.FREEE_REDIRECT_URI,
-            code: process.env.FREEE_AUTH_CODE
+        const accessToken = await getAccessToken();  // ✅ 修正: 直接関数として呼び出し
+        console.log("✅ 取得したアクセストークン:", accessToken);
+
+        const response = await axios.get(`https://api.freee.co.jp/hr/api/v1/payroll_statements?year=${year}&month=${month}`, {
+            headers: {
+                Authorization: `Bearer ${accessToken}`
+            }
         });
 
-        console.log("✅ アクセストークン取得成功:", response.data.access_token);
-        return response.data.access_token;
+        return response.data.payroll_statements;
     } catch (error) {
-        console.error("❌ アクセストークン取得に失敗:", error.response?.data || error.message);
-        throw new Error("アクセストークン取得エラー");
+        console.error("❌ 給与明細取得エラー:", error.response?.data || error.message);
+        throw new Error("給与明細取得に失敗しました");
     }
 }
 
-// ✅ **正しいエクスポート形式**
-module.exports = getAccessToken;
+// ✅ 修正: 関数をオブジェクトとしてエクスポート
+module.exports = { getPayrollStatements };
