@@ -17,6 +17,21 @@
         <ul id="errorItems"></ul>
     </div>
 
+    <script>
+        // ✅ 現在の年月を取得して入力欄にセット
+        function setCurrentMonth() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, "0");  // 0埋め
+
+            document.getElementById("year").value = year;  // ✅ 現在の年をセット
+            document.getElementById("month").value = month;  // ✅ 現在の月をセット
+        }
+
+        // ✅ 画面ロード時に実行
+        window.onload = setCurrentMonth;
+    </script>
+
     <script src="script.js"></script>
 </body>
 </html>
