@@ -3,7 +3,7 @@ const getAccessToken = require("./getAccessToken");  // ✅ 修正: インポー
 
 async function getPayrollStatements(year, month) {
     try {
-        const accessToken = await getAccessToken();  // ✅ 修正: 直接関数として呼び出し
+        const accessToken = await getAccessToken();  // ✅ 修正: 関数を適切に呼び出し
         console.log("✅ 取得したアクセストークン:", accessToken);
 
         const response = await axios.get(`https://api.freee.co.jp/hr/api/v1/payroll_statements?year=${year}&month=${month}`, {
@@ -19,4 +19,5 @@ async function getPayrollStatements(year, month) {
     }
 }
 
+// ✅ 修正: 関数を適切にエクスポート
 module.exports = getPayrollStatements;

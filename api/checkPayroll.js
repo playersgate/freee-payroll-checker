@@ -1,22 +1,14 @@
-const { getPayrollStatements } = require("./getPayrollStatements");
+const getPayrollStatements = require("./getPayrollStatements");  // ✅ 修正: 関数を適切にインポート
 
 async function checkPayrollErrors(year, month) {
-    const statements = await getPayrollStatements(year, month);
-    const errors = [];
-
-    statements.forEach(statement => {
-        const employeeName = statement.employee_name;
-        const deductions = statement.deductions;
-        const deductionItems = ["立替経費（その他）", "立替経費（福利厚生費）", "立替経費（通信費）", "立替経費（交通費）"];
-
-        deductionItems.forEach(item => {
-            if (deductions[item] > 0) {
-                errors.push({ employee: employeeName, item: item, amount: deductions[item] });
-            }
-        });
-    });
-
-    return errors;
+    try {
+        const statements = await getPayrollStatements(year, month);  // ✅ 修正: 直接関数として呼び出し
+        console.log("✅ 給与明細データ取得成功:", statements);
+        return statements;
+    } catch (error) {
+        console.error("❌ 給与明細チェックエラー:", error.message);
+        throw new Error("給与明細チェックに失敗しました");
+    }
 }
 
-module.exports = { checkPayrollErrors };
+module.exports = checkPayrollErrors;
