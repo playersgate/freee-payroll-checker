@@ -1,4 +1,4 @@
-const { getPayrollStatements } = require("./getPayrollStatements");  // ✅ 修正: 正しくインポート
+const getPayrollStatements = require("./getPayrollStatements");
 
 async function checkPayrollErrors(year, month) {
     try {
