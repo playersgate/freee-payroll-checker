@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>給与明細チェック</title> <!-- ✅ ブラウザのタブ名を変更 -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>給与明細チェック</h1> <!-- ✅ 画面タイトルを変更 -->
+    <input type="number" id="year" placeholder="年">
+    <input type="number" id="month" placeholder="月">
+    <button onclick="checkPayroll()">チェック開始</button>
+
+    <div id="status" style="display: none;">🔄 実行中...</div> <!-- ✅ ステータス表示 -->
+    <div id="errorList" style="display: none;">
+        <h2>エラー一覧</h2>
+        <ul id="errorItems"></ul>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
