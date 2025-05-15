@@ -1,23 +1,21 @@
 const axios = require("axios");
-const getAccessToken = require("./getAccessToken");  // ✅ 修正: インポート方法を正しく設定
 
-async function getPayrollStatements(year, month) {
+// アクセストークンを取得する関数
+async function getAccessToken() {
     try {
-        const accessToken = await getAccessToken();  // ✅ 修正: 直接関数として呼び出し
-        console.log("✅ 取得したアクセストークン:", accessToken);
-
-        const response = await axios.get(`https://api.freee.co.jp/hr/api/v1/payroll_statements?year=${year}&month=${month}`, {
-            headers: {
-                Authorization: `Bearer ${accessToken}`
-            }
+        // 例：クライアントID/シークレットなどでトークン取得（必要に応じて変更）
+        const response = await axios.post("https://api.freee.co.jp/auth/token", {
+            grant_type: "refresh_token",
+            refresh_token: process.env.FREEE_REFRESH_TOKEN,
+            client_id: process.env.FREEE_CLIENT_ID,
+            client_secret: process.env.FREEE_CLIENT_SECRET
         });
 
-        return response.data.payroll_statements;
+        return response.data.access_token;
     } catch (error) {
-        console.error("❌ 給与明細取得エラー:", error.response?.data || error.message);
-        throw new Error("給与明細取得に失敗しました");
+        console.error("❌ アクセストークン取得失敗:", error.response?.data || error.message);
+        throw new Error("アクセストークン取得に失敗しました");
     }
 }
 
-// ✅ 修正: 関数をオブジェクトとしてエクスポート
-module.exports = { getPayrollStatements };
+module.exports = getAccessToken;
