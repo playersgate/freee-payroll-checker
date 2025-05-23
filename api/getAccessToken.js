@@ -1,15 +1,54 @@
 const axios = require("axios");
 
+
+const express = require('express');
+const axios = require('axios');
+const qs = require('qs');
+require('dotenv').config();
+
+const app = express();
+const PORT = 3000;
+
+const CLIENT_ID = process.env.FREEE_CLIENT_ID;
+const CLIENT_SECRET = process.env.FREEE_CLIENT_SECRET;
+const REDIRECT_URI = process.env.FREEE_REDIRECT_URI;
+
+
 async function getAccessToken() {
     try {
-        const response = await axios.post("https://accounts.secure.freee.co.jp/public_api/token", {
-            grant_type: "authorization_code",
-            code: process.env.FREEE_AUTH_CODE,
-            redirect_uri:process.env.FREEE_REDIRECT_URI,
-            client_id: process.env.FREEE_CLIENT_ID,
-            client_secret: process.env.FREEE_CLIENT_SECRET
+        // 認可URLを生成してリダイレクト
+        app.get('/auth', (req, res) => {
+            const authURL = `https://accounts.secure.freee.co.jp/public_api/authorize?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=read write`;
+            res.redirect(authURL);
         });
-        return response.data.access_token;
+        
+        // 認可コードを受け取り、トークンを取得
+        app.get('/callback', async (req, res) => {
+            const code = req.query.code;
+            if (!code) {
+                console.error("❌ 認可コードがありません");
+            }
+        
+            try {
+                const tokenResponse = await axios.post(
+                    'https://api.freee.co.jp/auth/token',
+                    qs.stringify({
+                    grant_type: 'authorization_code',
+                    code,
+                    client_id: CLIENT_ID,
+                    client_secret: CLIENT_SECRET,
+                    redirect_uri: REDIRECT_URI
+                    }),
+                    { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+                );
+            
+            } catch (err) {
+                console.error(err.response?.data || err.message);
+                res.status(500).send("❌ トークン取得に失敗しました");
+            }
+        });
+
+        return tokenResponse.data;
     } catch (error) {
         console.error("❌ アクセストークン取得失敗:", error.response?.data || error.message);
         throw new Error("アクセストークン取得に失敗しました");
