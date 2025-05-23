@@ -21,7 +21,7 @@ async function getAccessToken() {
             res.redirect(authURL);
           });
           
-          
+
         // 認可コードを受け取り、トークンを取得
         app.get('/callback', async (req, res) => {
             const code = req.query.code;
@@ -52,7 +52,7 @@ async function getAccessToken() {
 
         return tokenResponse.data;
     } catch (error) {
-
+        console.error("authURL:", authURL);
         console.error("❌ アクセストークン取得失敗:", error.response?.data || error.message);
         throw new Error("アクセストークン取得に失敗しました");
     }
