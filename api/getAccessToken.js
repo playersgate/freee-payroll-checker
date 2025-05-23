@@ -1,22 +1,13 @@
-const axios = require("axios");
-const express = require('express');
-const qs = require('qs');
 require('dotenv').config();
-const app = express();
+const axios = require('axios');
+const qs = require('qs');
 
 const CLIENT_ID = process.env.FREEE_CLIENT_ID;
 const CLIENT_SECRET = process.env.FREEE_CLIENT_SECRET;
 const REDIRECT_URI = process.env.FREEE_REDIRECT_URI;
 
-
 async function getAccessToken() {
     try {
-        // 認可URLを生成してリダイレクト
-        // app.get('/auth', (req, res) => {
-        //     const authURL = `https://accounts.secure.freee.co.jp/public_api/authorize?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=read write`;
-        //     res.redirect(authURL);
-        // });
-    
         app.get('/auth', (req, res) => {
             const params = new URLSearchParams({
               response_type: "code",
@@ -30,7 +21,7 @@ async function getAccessToken() {
             res.redirect(authURL);
           });
           
-
+          
         // 認可コードを受け取り、トークンを取得
         app.get('/callback', async (req, res) => {
             const code = req.query.code;
