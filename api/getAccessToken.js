@@ -8,7 +8,9 @@ async function getAccessToken() {
             client_id: process.env.FREEE_CLIENT_ID,
             client_secret: process.env.FREEE_CLIENT_SECRET
         });
-
+        console.error("FREEE_REFRESH_TOKEN:",process.env.FREEE_REFRESH_TOKEN);
+        console.error("FREEE_CLIENT_ID:",process.env.FREEE_CLIENT_ID);
+        console.error("FREEE_CLIENT_SECRET:",process.env.FREEE_CLIENT_SECRET);
         return response.data.access_token;
     } catch (error) {
         console.error("❌ アクセストークン取得失敗:", error.response?.data || error.message);
