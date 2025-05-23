@@ -22,6 +22,8 @@ async function getAccessToken() {
             const code = req.query.code;
             if (!code) {
                 console.error("❌ 認可コードがありません");
+            }else{
+                console.log("code:",code);
             }
         
             try {
