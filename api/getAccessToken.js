@@ -12,11 +12,25 @@ const REDIRECT_URI = process.env.FREEE_REDIRECT_URI;
 async function getAccessToken() {
     try {
         // 認可URLを生成してリダイレクト
+        // app.get('/auth', (req, res) => {
+        //     const authURL = `https://accounts.secure.freee.co.jp/public_api/authorize?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=read write`;
+        //     res.redirect(authURL);
+        // });
+    
         app.get('/auth', (req, res) => {
-            const authURL = `https://accounts.secure.freee.co.jp/public_api/authorize?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=read write`;
+            const params = new URLSearchParams({
+              response_type: "code",
+              client_id: CLIENT_ID,
+              redirect_uri: REDIRECT_URI,
+              scope: "read write",
+              state: "freee-payroll-checker" // 任意の文字列（CSRF対策用）
+            });
+          
+            const authURL = `https://accounts.secure.freee.co.jp/public_api/authorize?${params.toString()}`;
             res.redirect(authURL);
-        });
-        
+          });
+          
+
         // 認可コードを受け取り、トークンを取得
         app.get('/callback', async (req, res) => {
             const code = req.query.code;
@@ -47,6 +61,7 @@ async function getAccessToken() {
 
         return tokenResponse.data;
     } catch (error) {
+
         console.error("❌ アクセストークン取得失敗:", error.response?.data || error.message);
         throw new Error("アクセストークン取得に失敗しました");
     }
