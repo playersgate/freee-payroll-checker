@@ -1,13 +1,8 @@
 const axios = require("axios");
-
-
 const express = require('express');
-const axios = require('axios');
 const qs = require('qs');
 require('dotenv').config();
-
 const app = express();
-const PORT = 3000;
 
 const CLIENT_ID = process.env.FREEE_CLIENT_ID;
 const CLIENT_SECRET = process.env.FREEE_CLIENT_SECRET;
