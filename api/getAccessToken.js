@@ -18,6 +18,7 @@ async function getAccessToken() {
             });
           
             const authURL = `https://accounts.secure.freee.co.jp/public_api/authorize?${params.toString()}`;
+            console.log("authURL:", authURL);
             res.redirect(authURL);
           });
           
