@@ -90,7 +90,7 @@ function setupAuthRoutes(app) {
                 }),
                 { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
             );
-
+console.log('Freee API token raw response:', JSON.stringify(response.data, null, 2));
             const tokenData = tokenResponse.data; // ★トークンデータを取得
             console.log("✅ getAccessToken: アクセストークン取得成功！");
 
