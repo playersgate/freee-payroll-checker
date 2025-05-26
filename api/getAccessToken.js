@@ -75,11 +75,12 @@ function setupAuthRoutes(app) {
             cachedAccessToken = tokenResponse.data;
             console.log("✅ getAccessToken: アクセストークン取得成功！");
 
-            res.send(`
-                <h1>freee認証成功！</h1>
-                <p>freee APIへのアクセス準備ができました。</p>
-                <p><a href="/">給与明細チェックページに戻る</a></p>
-            `);
+res.redirect('/check'); // アクセストークン取得後、直接 /check にリダイレクト
+            // res.send(`
+            //     <h1>freee認証成功！</h1>
+            //     <p>freee APIへのアクセス準備ができました。</p>
+            //     <p><a href="/">給与明細チェックページに戻る</a></p>
+            // `);
 
         } catch (err) {
             console.error("❌ getAccessToken: アクセストークン取得中にエラーが発生しました:", err.response?.data || err.message);
