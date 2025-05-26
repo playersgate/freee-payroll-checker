@@ -30,8 +30,8 @@ function setupAuthRoutes(app) {
             client_id: CLIENT_ID, //アプリのclient_id
             redirect_uri: REDIRECT_URI, //アプリのコールバックURL
             scope: "read write payroll", // 給与明細アクセスに必要なスコープを追加
-            state: currentState, //ランダムな文字列
-            prompt:select_company //https://developer.freee.co.jp/guideline/select-company
+            state: currentState //ランダムな文字列
+            //prompt:select_company //https://developer.freee.co.jp/guideline/select-company
         });
 
         const authURL = `https://accounts.secure.freee.co.jp/public_api/authorize?${params.toString()}`;
