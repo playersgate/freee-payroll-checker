@@ -1,9 +1,10 @@
-// server.js
+// server.js - 修正版
 require('dotenv').config(); // 必ず先頭に配置
 const express = require("express");
 const path = require("path");
 const { setupAuthRoutes } = require("./api/getAccessToken"); // setupAuthRoutesをインポート
-const { checkPayrollErrors } = require("./api/checkPayroll");
+// ★修正: checkPayrollErrors ではなく checkPayroll をインポート
+const { checkPayroll } = require("./api/checkPayroll"); 
 
 const app = express();
 const PORT = process.env.PORT || 10000;
@@ -23,8 +24,8 @@ app.get("/check", async (req, res) => {
     }
 
     try {
-        // checkPayrollErrors 関数はアクセストークンを内部で取得するようになったため、ここでは渡す必要がない
-        const errors = await checkPayrollErrors(year, month);
+        // ★修正: checkPayrollErrors ではなく checkPayroll を呼び出す
+        const errors = await checkPayroll(year, month);
 
         if (errors.length === 0) {
             res.json({ message: "エラーは見つかりませんでした。", errors: [] });
