@@ -3,13 +3,34 @@ require('dotenv').config();
 const axios = require('axios');
 const qs = require('qs');
 const { URLSearchParams } = require('url');
+const { Client } = require('pg'); // ★追加: pgをインポート
+
+// express, app, PORT の定義はserver.jsに移動するので、ここから削除
+// const express = require('express');
+// const app = express();
+// const PORT = process.env.PORT || 10000;
 
 const CLIENT_ID = process.env.FREEE_CLIENT_ID;
 const CLIENT_SECRET = process.env.FREEE_CLIENT_SECRET;
-const REDIRECT_URI = process.env.FREEE_REDIRECT_URI; // 例: http://localhost:10000/callback
+const REDIRECT_URI = process.env.FREEE_REDIRECT_URI; // 例: https://freee-payroll-checker.onrender.com/callback
+const DATABASE_URL = process.env.DATABASE_URL; // ★追加: RenderのDB接続URL
 
-let cachedAccessToken = null; // アクセストークンを格納する変数
-let currentState = null;     // CSRF対策用のstateを保存
+// DBクライアントの初期化
+const dbClient = new Client({
+    connectionString: DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false // Renderなど、SSL証明書が自己署名の場合に必要
+    }
+});
+
+// DB接続
+dbClient.connect()
+    .then(() => console.log('✅ PostgreSQLに接続しました。'))
+    .catch(err => console.error('❌ PostgreSQL接続エラー:', err.stack));
+
+
+// let cachedAccessToken = null; // ★削除: メモリキャッシュは不要になります
+let currentState = null;     // CSRF対策用のstateを保存
 
 /**
  * freeeのOAuth2.0認可コードフローのルーティングをExpressアプリに登録します。
@@ -31,7 +52,6 @@ function setupAuthRoutes(app) {
             redirect_uri: REDIRECT_URI, //アプリのコールバックURL
             scope: "read write payroll", // 給与明細アクセスに必要なスコープを追加
             state: currentState //ランダムな文字列
-            //prompt:select_company //https://developer.freee.co.jp/guideline/select-company
         });
 
         const authURL = `https://accounts.secure.freee.co.jp/public_api/authorize?${params.toString()}`;
@@ -71,16 +91,27 @@ function setupAuthRoutes(app) {
                 { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
             );
 
-            // トークンデータをそのままキャッシュ
-            cachedAccessToken = tokenResponse.data;
+            const tokenData = tokenResponse.data; // ★トークンデータを取得
             console.log("✅ getAccessToken: アクセストークン取得成功！");
 
-res.redirect('/check'); // アクセストークン取得後、直接 /check にリダイレクト
-            // res.send(`
-            //     <h1>freee認証成功！</h1>
-            //     <p>freee APIへのアクセス準備ができました。</p>
-            //     <p><a href="/">給与明細チェックページに戻る</a></p>
-            // `);
+            // ★DBにトークンを保存するロジック
+            // 簡単にするため、毎回既存データを削除して挿入
+            // COMPANY_IDを保存する場合は、別途その情報を取得して含める
+            await dbClient.query('TRUNCATE TABLE freee_tokens RESTART IDENTITY;'); // 全データ削除
+            const insertQuery = `
+                INSERT INTO freee_tokens(access_token, refresh_token, expires_in, token_type, scope)
+                VALUES($1, $2, $3, $4, $5);
+            `;
+            await dbClient.query(insertQuery, [
+                tokenData.access_token,
+                tokenData.refresh_token,
+                tokenData.expires_in,
+                tokenData.token_type,
+                tokenData.scope
+            ]);
+            console.log("✅ アクセストークンをデータベースに保存しました。");
+
+            res.redirect('/check'); // アクセストークン取得後、直接 /check にリダイレクト
 
         } catch (err) {
             console.error("❌ getAccessToken: アクセストークン取得中にエラーが発生しました:", err.response?.data || err.message);
@@ -94,11 +125,26 @@ res.redirect('/check'); // アクセストークン取得後、直接 /check に
 }
 
 /**
- * 現在キャッシュされているアクセストークンを返します。
- * @returns {object|null} - アクセストークンオブジェクト（access_token, refresh_tokenなどを含む）、またはnull
+ * データベースから現在利用可能なアクセストークンを返します。
+ * @returns {Promise<object|null>} - アクセストークンオブジェクト（access_token, refresh_tokenなどを含む）、またはnull
  */
-function getCachedAccessToken() {
-    return cachedAccessToken;
+async function getCachedAccessToken() { // ★asyncキーワードを追加
+    try {
+        // 最新のトークンをデータベースから取得
+        const result = await dbClient.query('SELECT * FROM freee_tokens ORDER BY created_at DESC LIMIT 1;');
+        if (result.rows.length > 0) {
+            const token = result.rows[0];
+            // ここでトークンの有効期限チェックも行うべきだが、まずはシンプルに取得
+            console.log("getCachedAccessToken: データベースからトークンを取得しました。");
+            return token;
+        }
+        console.log("getCachedAccessToken: データベースにトークンが見つかりません。");
+        return null;
+    } catch (error) {
+        console.error("❌ getCachedAccessToken: データベースからのトークン取得中にエラー:", error.message);
+        return null;
+    }
 }
 
+// ★外部から利用できるようにエクスポート
 module.exports = { setupAuthRoutes, getCachedAccessToken };
